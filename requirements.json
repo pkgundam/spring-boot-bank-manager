@@ -1,0 +1,147 @@
+{
+  "projectName": "Simple Banking System - In Memory Spring Boot APIs",
+  "description": "Build a simple Spring Boot REST API banking system using in-memory storage, with proper layering (controller/service/repository), validations, and centralized exception handling. No database and no tests required in this phase.",
+  "mustHaveFeatures": [
+    "Create bank accounts with accountId, holderName, and initialBalance",
+    "Get account details by accountId",
+    "View all accounts",
+    "Deposit money into an account",
+    "Withdraw money from an account",
+    "Transfer money between two accounts",
+    "Use in-memory storage (e.g., Map or List) in a Repository class instead of a database",
+    "Return meaningful HTTP status codes (201, 200, 400, 404, 422, etc.)",
+    "Use request/response DTOs (no direct entity exposure from controllers)",
+    "Global exception handling for business and validation errors",
+    "Basic health endpoint (e.g., /api/health or /actuator/health if enabled)"
+  ],
+  "requiredConcepts": [
+    "Spring Boot project setup using Spring Initializr",
+    "REST controllers using @RestController and @RequestMapping",
+    "Controller → Service → Repository layered architecture",
+    "Dependency Injection using @Service and @Repository annotations",
+    "In-memory data storage using Map<Long, Account> or similar structure",
+    "Request and response DTOs using simple POJOs",
+    "Java Bean Validation annotations (@NotNull, @NotBlank, @Positive, @PositiveOrZero, @Size, etc.)",
+    "Validation handling with @Valid and BindingResult or automatic validation failures",
+    "Custom exceptions for business rules (e.g., AccountNotFoundException, InsufficientBalanceException, InvalidAmountException)",
+    "Global exception handler using @ControllerAdvice and @ExceptionHandler",
+    "Meaningful error response structure (ErrorResponse DTO with timestamp, message, details, path)",
+    "Use of HTTP methods: GET, POST, PUT/PATCH",
+    "Use of HTTP status codes: 200 OK, 201 CREATED, 400 BAD_REQUEST, 404 NOT_FOUND, 422 UNPROCESSABLE_ENTITY",
+    "Basic logging using System.out or Logger (optional but recommended)",
+    "JavaDoc comments on public methods in Service and Repository classes"
+  ],
+  "apiEndpoints": [
+    {
+      "name": "Create Account",
+      "method": "POST",
+      "path": "/api/accounts",
+      "requestBody": "CreateAccountRequest { holderName, initialBalance }",
+      "responseBody": "AccountResponse { accountId, holderName, balance, createdAt }",
+      "successStatus": 201,
+      "description": "Create a new bank account with an initial balance."
+    },
+    {
+      "name": "Get Account by ID",
+      "method": "GET",
+      "path": "/api/accounts/{accountId}",
+      "responseBody": "AccountResponse",
+      "successStatus": 200,
+      "description": "Fetch details of a single account by its ID."
+    },
+    {
+      "name": "Get All Accounts",
+      "method": "GET",
+      "path": "/api/accounts",
+      "responseBody": "List<AccountResponse>",
+      "successStatus": 200,
+      "description": "Fetch all accounts currently stored in-memory."
+    },
+    {
+      "name": "Deposit",
+      "method": "POST",
+      "path": "/api/accounts/{accountId}/deposit",
+      "requestBody": "AmountRequest { amount }",
+      "responseBody": "AccountResponse",
+      "successStatus": 200,
+      "description": "Increase balance of an account by the given amount."
+    },
+    {
+      "name": "Withdraw",
+      "method": "POST",
+      "path": "/api/accounts/{accountId}/withdraw",
+      "requestBody": "AmountRequest { amount }",
+      "responseBody": "AccountResponse",
+      "successStatus": 200,
+      "description": "Decrease balance of an account by the given amount if sufficient balance exists."
+    },
+    {
+      "name": "Transfer",
+      "method": "POST",
+      "path": "/api/accounts/transfer",
+      "requestBody": "TransferRequest { fromAccountId, toAccountId, amount }",
+      "responseBody": "TransferResponse { fromAccount, toAccount }",
+      "successStatus": 200,
+      "description": "Transfer the given amount from one account to another if both accounts exist and the source account has sufficient balance."
+    },
+    {
+      "name": "Get Transaction History",
+      "method": "GET",
+      "path": "/api/accounts/{accountId}/transactions",
+      "responseBody": "List<TransactionResponse>",
+      "successStatus": 200,
+      "description": "Fetch all transactions for the given account in reverse chronological order."
+    },
+    {
+      "name": "Health Check",
+      "method": "GET",
+      "path": "/api/health",
+      "responseBody": "{ status: 'UP' }",
+      "successStatus": 200,
+      "description": "Simple endpoint to verify that the application is running."
+    }
+  ],
+  "validationRules": [
+    "holderName must not be null or blank and must have a reasonable length (e.g., 2–50 characters).",
+    "initialBalance must be zero or positive (>= 0). Negative initial balances are not allowed.",
+    "amount for deposit/withdraw/transfer must be strictly positive (> 0).",
+    "accountId must be a positive number.",
+    "Transfers must not allow fromAccountId == toAccountId.",
+    "Withdrawal and transfer must not be allowed if resulting balance would be negative.",
+    "All request DTOs must use Bean Validation annotations.",
+    "Controllers must use @Valid on request DTO parameters to trigger validation.",
+    "Invalid input must result in a 400 BAD_REQUEST or 422 UNPROCESSABLE_ENTITY with a clear error message."
+  ],
+  "exceptionHandling": [
+    "AccountNotFoundException → return 404 NOT_FOUND with a message like 'Account with id X not found'.",
+    "InsufficientBalanceException → return 422 UNPROCESSABLE_ENTITY with message 'Insufficient balance for this operation'.",
+    "InvalidAmountException → return 400 BAD_REQUEST with message 'Amount must be greater than zero'.",
+    "MethodArgumentNotValidException (validation errors) → return 400 BAD_REQUEST with a list of field errors.",
+    "Handle all above in a @ControllerAdvice class (GlobalExceptionHandler) using @ExceptionHandler methods.",
+    "Return a standardized ErrorResponse JSON with fields: timestamp, status, error, message, path.",
+    "Handle generic Exception as a fallback with 500 INTERNAL_SERVER_ERROR and generic user-friendly message.",
+    "Use try-catch blocks in Service layer only when converting lower-level exceptions to business exceptions (if needed)."
+  ],
+  "projectStructureHints": [
+    "com.example.banking.controller",
+    "com.example.banking.service",
+    "com.example.banking.repository",
+    "com.example.banking.model",
+    "com.example.banking.dto",
+    "com.example.banking.exception"
+  ],
+  "nonFunctionalRequirements": [
+    "The APIs should follow REST principles and use JSON for request and response bodies.",
+    "Responses must be consistent in structure; all errors should use ErrorResponse DTO.",
+    "The project must build and run using Maven or Gradle without additional setup.",
+    "Code must be clean, readable, and properly formatted.",
+    "Public methods in Service and Repository layers should have JavaDoc comments briefly explaining their purpose.",
+    "Use meaningful package names and avoid putting all classes in the root package."
+  ],
+  "futureExtensionsHint": [
+    "Later phases can replace the in-memory repository with a real database (JPA/Hibernate).",
+    "Add JUnit tests for service and controller layers in the next iteration.",
+    "Add pagination, sorting, and searching for accounts via query parameters.",
+    "Add Spring Security for basic authentication and authorization."
+  ]
+}

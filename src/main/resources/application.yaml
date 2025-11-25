@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: spring-boot-bank-manager
+  jackson:
+    serialization:
+      indent-output: true
+
+server:
+  port: 8081
+  error:
+    include-message: always # just for development purposes
+    include-binding-errors: always # just for development purposes
+
+logging:
+  level:
+    root: info
+    org.springframework.web: debug
+    com.bank.manager: debug
