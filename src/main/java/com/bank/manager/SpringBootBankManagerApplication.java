@@ -3,6 +3,9 @@ package com.bank.manager;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/*9
+ * Main application class for the Spring Boot Bank Manager application.
+ */
 @SpringBootApplication
 public class SpringBootBankManagerApplication {
 
