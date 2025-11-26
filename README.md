@@ -4,6 +4,7 @@ This project is a beginner-friendly Spring Boot application that
 simulates basic banking operations using REST APIs.\
 There is **no database** used---everything runs in memory using
 Maps/Lists.\
+There is **no tets** too in this project.\
 The goal is to help students learn Spring Boot fundamentals such as:
 
 -   Controllers
@@ -148,18 +149,6 @@ following areas:
 -   README clarity
 -   Proper package structure
 -   Easy to run and understand
-
-------------------------------------------------------------------------
-
-## 📊 How Scoring Works
-
--   Total score: **100 points**
--   Each category contributes based on the percentages above
--   The LLM will provide:
-    -   Score breakdown\
-    -   Strengths\
-    -   Areas to improve\
-    -   Final evaluation summary
 
 ------------------------------------------------------------------------
 
