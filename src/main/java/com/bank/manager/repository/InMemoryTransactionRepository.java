@@ -18,7 +18,7 @@ public class InMemoryTransactionRepository implements TransactionRepository {
     private final AtomicLong idGenerator = new AtomicLong(1);
 
     @Override
-    public synchronized Transaction save(Transaction transaction) {
+    public Transaction save(Transaction transaction) {
         if (transaction.getTransactionId() == null) {
             transaction.setTransactionId(idGenerator.getAndIncrement());
         }
