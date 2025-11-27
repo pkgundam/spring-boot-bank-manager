@@ -1,6 +1,7 @@
 package com.bank.manager.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
@@ -12,6 +13,7 @@ public class CreateAccountRequest {
     private String holderName;
 
     @PositiveOrZero(message = "Initial balance must be zero or positive")
+    @NotNull
     private BigDecimal initialBalance;
 
     public String getHolderName() {

@@ -17,6 +17,13 @@ public class InMemoryTransactionRepository implements TransactionRepository {
     private final Map<Long, List<Transaction>> storage = new ConcurrentHashMap<>();
     private final AtomicLong idGenerator = new AtomicLong(1);
 
+    /**
+     * Saves the given transaction to the repository.
+     * If the transaction has no ID, a new one will be generated.
+     *
+     * @param transaction The transaction to save
+     * @return The saved transaction (with generated ID if new)
+     */
     @Override
     public Transaction save(Transaction transaction) {
         if (transaction.getTransactionId() == null) {
@@ -27,6 +34,12 @@ public class InMemoryTransactionRepository implements TransactionRepository {
         return transaction;
     }
 
+    /**
+     * Finds all transactions for a specific account, sorted by creation time in descending order (latest first).
+     *
+     * @param accountId The ID of the account to find transactions for
+     * @return A list of transactions for the given account, or an empty list if no transactions are found
+     */
     @Override
     public List<Transaction> findByAccountId(Long accountId) {
         return storage.getOrDefault(accountId, Collections.emptyList())
