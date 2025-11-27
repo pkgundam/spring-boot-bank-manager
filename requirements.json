@@ -12,7 +12,8 @@
     "Return meaningful HTTP status codes (201, 200, 400, 404, 422, etc.)",
     "Use request/response DTOs (no direct entity exposure from controllers)",
     "Global exception handling for business and validation errors",
-    "Basic health endpoint (e.g., /api/health or /actuator/health if enabled)"
+    "Basic health endpoint (e.g., /api/health or /actuator/health if enabled)",
+    "JavaDoc comments at-least on public methods in Service and Repository classes"
   ],
   "requiredConcepts": [
     "Spring Boot project setup using Spring Initializr",
