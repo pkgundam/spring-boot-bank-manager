@@ -1,9 +1,15 @@
 package com.bank.manager.dto;
 
+import com.bank.manager.validation.DifferentAccounts;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 
+@DifferentAccounts(
+    first = "fromAccountId",
+    second = "toAccountId",
+    message = "Source and destination accounts must be different"
+)
 public class TransferRequest {
 
     @NotNull(message = "From account id is required")
