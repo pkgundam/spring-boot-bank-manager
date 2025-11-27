@@ -68,7 +68,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public synchronized AccountResponse deposit(Long accountId, AmountRequest request) {
+    public AccountResponse deposit(Long accountId, AmountRequest request) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException(accountId));
 
@@ -83,7 +83,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public synchronized AccountResponse withdraw(Long accountId, AmountRequest request) {
+    public AccountResponse withdraw(Long accountId, AmountRequest request) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException(accountId));
 
@@ -103,11 +103,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public synchronized TransferResponse transfer(TransferRequest request) {
-        if (request.getFromAccountId().equals(request.getToAccountId())) {
-            throw new IllegalArgumentException("fromAccountId and toAccountId must be different");
-        }
-
+    public TransferResponse transfer(TransferRequest request) {
         Account from = accountRepository.findById(request.getFromAccountId())
                 .orElseThrow(() -> new AccountNotFoundException(request.getFromAccountId()));
         Account to = accountRepository.findById(request.getToAccountId())
