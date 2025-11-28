@@ -30,6 +30,13 @@ public class AccountServiceImpl implements AccountService {
         this.transactionRepository = transactionRepository;
     }
 
+    /**
+     * Creates a new bank account with the provided details.
+     *
+     * @param request The request containing account creation details
+     * @return The created account response
+     * @throws jakarta.validation.ConstraintViolationException if request validation fails
+     */
     @Override
     public AccountResponse createAccount(CreateAccountRequest request) {
         BigDecimal initialBalance = request.getInitialBalance() == null
@@ -52,6 +59,13 @@ public class AccountServiceImpl implements AccountService {
         return toResponse(saved);
     }
 
+    /**
+     * Retrieves an account by its unique identifier.
+     *
+     * @param accountId The ID of the account to retrieve
+     * @return The account details
+     * @throws com.bank.manager.exception.AccountNotFoundException if no account is found with the given ID
+     */
     @Override
     public AccountResponse getAccountById(Long accountId) {
         Account account = accountRepository.findById(accountId)
@@ -59,6 +73,11 @@ public class AccountServiceImpl implements AccountService {
         return toResponse(account);
     }
 
+    /**
+     * Retrieves all bank accounts in the system.
+     *
+     * @return A list of all account responses
+     */
     @Override
     public List<AccountResponse> getAllAccounts() {
         return accountRepository.findAll()
@@ -67,6 +86,15 @@ public class AccountServiceImpl implements AccountService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Deposits the specified amount into the account.
+     *
+     * @param accountId The ID of the account to deposit into
+     * @param request The request containing the deposit amount
+     * @return The updated account details
+     * @throws com.bank.manager.exception.AccountNotFoundException if no account is found with the given ID
+     * @throws jakarta.validation.ConstraintViolationException if request validation fails
+     */
     @Override
     public AccountResponse deposit(Long accountId, AmountRequest request) {
         Account account = accountRepository.findById(accountId)
@@ -82,6 +110,16 @@ public class AccountServiceImpl implements AccountService {
         return toResponse(account);
     }
 
+    /**
+     * Withdraws the specified amount from the account.
+     *
+     * @param accountId The ID of the account to withdraw from
+     * @param request The request containing the withdrawal amount
+     * @return The updated account details
+     * @throws com.bank.manager.exception.AccountNotFoundException if no account is found with the given ID
+     * @throws com.bank.manager.exception.InsufficientBalanceException if the account has insufficient funds
+     * @throws jakarta.validation.ConstraintViolationException if request validation fails
+     */
     @Override
     public AccountResponse withdraw(Long accountId, AmountRequest request) {
         Account account = accountRepository.findById(accountId)
@@ -102,6 +140,16 @@ public class AccountServiceImpl implements AccountService {
         return toResponse(account);
     }
 
+    /**
+     * Transfers money between two accounts.
+     *
+     * @param request The transfer request containing source account, destination account, and amount
+     * @return The transfer response containing both updated account details
+     * @throws com.bank.manager.exception.AccountNotFoundException if either account is not found
+     * @throws com.bank.manager.exception.InsufficientBalanceException if the source account has insufficient funds
+     * @throws IllegalArgumentException if source and destination accounts are the same
+     * @throws jakarta.validation.ConstraintViolationException if request validation fails
+     */
     @Override
     public TransferResponse transfer(TransferRequest request) {
         Account from = accountRepository.findById(request.getFromAccountId())
@@ -129,6 +177,13 @@ public class AccountServiceImpl implements AccountService {
         return new TransferResponse(toResponse(from), toResponse(to));
     }
 
+    /**
+     * Retrieves all transactions for a specific account.
+     *
+     * @param accountId The ID of the account to find transactions for
+     * @return A list of transaction responses
+     * @throws com.bank.manager.exception.AccountNotFoundException if no account is found with the given ID
+     */
     @Override
     public List<TransactionResponse> getTransactionsForAccount(Long accountId) {
         // Ensure account exists (otherwise 404)
@@ -151,6 +206,15 @@ public class AccountServiceImpl implements AccountService {
         );
     }
 
+    /**
+     * Records a transaction in the database.
+     *
+     * @param account The account related to the transaction
+     * @param type The type of the transaction
+     * @param amount The amount of the transaction
+     * @param relatedAccountId The ID of the related account in the transaction
+     * @param description A human-readable description of the transaction
+     */
     private void recordTransaction(Account account,
                                    TransactionType type,
                                    BigDecimal amount,
