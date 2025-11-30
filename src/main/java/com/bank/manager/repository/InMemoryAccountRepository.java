@@ -52,5 +52,13 @@ public class InMemoryAccountRepository implements AccountRepository {
     public List<Account> findAll() {
         return new ArrayList<>(storage.values());
     }
-    
+
+    @Override
+    public List<Account> findAllByUserId(Long ownerUserId) {
+        return storage.values()
+                .stream()
+                .filter(x -> ownerUserId.equals(x.getOwnerUserId()))
+                .toList();
+    }
+
 }

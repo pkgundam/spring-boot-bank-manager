@@ -6,18 +6,20 @@ import java.time.LocalDateTime;
 public class Account {
 
     private Long accountId;
-    private String holderName;
+    private String accountName;
     private BigDecimal balance;
     private LocalDateTime createdAt;
+    private Long ownerUserId;
 
     public Account() {
     }
 
-    public Account(Long accountId, String holderName, BigDecimal balance, LocalDateTime createdAt) {
+    public Account(Long accountId, String accountName, BigDecimal balance, LocalDateTime createdAt, Long ownerUserId) {
         this.accountId = accountId;
-        this.holderName = holderName;
+        this.accountName = accountName;
         this.balance = balance;
         this.createdAt = createdAt;
+        this.ownerUserId = ownerUserId;
     }
 
     public Long getAccountId() {
@@ -28,12 +30,12 @@ public class Account {
         this.accountId = accountId;
     }
 
-    public String getHolderName() {
-        return holderName;
+    public String getAccountName() {
+        return accountName;
     }
 
-    public void setHolderName(String holderName) {
-        this.holderName = holderName;
+    public void setAccountName(String accountName) {
+        this.accountName = accountName;
     }
 
     public BigDecimal getBalance() {
@@ -51,4 +53,13 @@ public class Account {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+    public Long getOwnerUserId() {
+        return ownerUserId;
+    }
+
+    public void setOwnerUserId(Long ownerUserId) {
+        this.ownerUserId = ownerUserId;
+    }
+
 }

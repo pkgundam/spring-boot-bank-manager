@@ -1,9 +1,12 @@
 package com.bank.manager.exception;
 
+import com.bank.manager.auth.exception.EmailAlreadyExistsException;
+import com.bank.manager.auth.exception.InvalidCredentialsException;
 import com.bank.manager.dto.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -17,7 +20,7 @@ public class GlobalExceptionHandler {
     /**
      * Handles AccountNotFoundException by returning a 404 Not Found response.
      *
-     * @param ex The caught AccountNotFoundException
+     * @param ex      The caught AccountNotFoundException
      * @param request The HTTP request that resulted in the exception
      * @return ResponseEntity containing error details with HTTP 404 status
      */
@@ -30,7 +33,7 @@ public class GlobalExceptionHandler {
     /**
      * Handles InsufficientBalanceException by returning a 422 Unprocessable Entity response.
      *
-     * @param ex The caught InsufficientBalanceException
+     * @param ex      The caught InsufficientBalanceException
      * @param request The HTTP request that resulted in the exception
      * @return ResponseEntity containing error details with HTTP 422 status
      */
@@ -44,7 +47,7 @@ public class GlobalExceptionHandler {
      * Handles validation errors from @Valid annotations by returning a 400 Bad Request response.
      * Collects all field validation errors into a single error message.
      *
-     * @param ex The caught MethodArgumentNotValidException
+     * @param ex      The caught MethodArgumentNotValidException
      * @param request The HTTP request that resulted in the validation error
      * @return ResponseEntity containing validation error details with HTTP 400 status
      */
@@ -70,7 +73,7 @@ public class GlobalExceptionHandler {
      * Handles IllegalArgumentException by returning a 400 Bad Request response.
      * Used for general argument validation failures.
      *
-     * @param ex The caught IllegalArgumentException
+     * @param ex      The caught IllegalArgumentException
      * @param request The HTTP request that resulted in the exception
      * @return ResponseEntity containing error details with HTTP 400 status
      */
@@ -84,13 +87,13 @@ public class GlobalExceptionHandler {
      * Handles InvalidAmountException by returning a 400 Bad Request response.
      * Used when an invalid monetary amount is provided in a request.
      *
-     * @param ex The caught InvalidAmountException
+     * @param ex      The caught InvalidAmountException
      * @param request The HTTP request that contained the invalid amount
      * @return ResponseEntity containing error details with HTTP 400 status
      */
     @ExceptionHandler(InvalidAmountException.class)
     public ResponseEntity<ErrorResponse> handleInvalidAmount(InvalidAmountException ex,
-                                                           HttpServletRequest request) {
+                                                             HttpServletRequest request) {
         return buildErrorResponse(ex, HttpStatus.BAD_REQUEST, request);
     }
 
@@ -99,7 +102,7 @@ public class GlobalExceptionHandler {
      * Returns a 500 Internal Server Error response.
      * In a production environment, consider logging the full stack trace.
      *
-     * @param ex The caught Exception
+     * @param ex      The caught Exception
      * @param request The HTTP request that resulted in the exception
      * @return ResponseEntity with a generic error message and HTTP 500 status
      */
@@ -116,12 +119,48 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
 
+    @ExceptionHandler(ForbiddenOperationException.class)
+    public ResponseEntity<ErrorResponse> handleForbidden(ForbiddenOperationException ex,
+                                                         HttpServletRequest req) {
+        ErrorResponse body = new ErrorResponse(
+                Instant.now(),
+                HttpStatus.FORBIDDEN.value(),
+                HttpStatus.FORBIDDEN.getReasonPhrase(),
+                ex.getMessage(),
+                req.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+    }
+
+    // Auth Exceptions
+    // 400 — email already exists
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleEmailAlreadyExists(EmailAlreadyExistsException ex,
+                                                                  HttpServletRequest req) {
+        return buildErrorResponse(ex, HttpStatus.BAD_REQUEST, req);
+    }
+
+    // 401 — invalid credentials (login)
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex,
+                                                                  HttpServletRequest req) {
+        return buildErrorResponse(ex, HttpStatus.UNAUTHORIZED, req);
+    }
+
+    // 401 — spring security bad credentials
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex,
+                                                              HttpServletRequest req) {
+        return buildErrorResponse(ex, HttpStatus.UNAUTHORIZED, req);
+    }
+
     // all private methods below
+
     /**
      * Helper method to build a consistent error response.
      *
-     * @param ex The exception that was thrown
-     * @param status The HTTP status code to return
+     * @param ex      The exception that was thrown
+     * @param status  The HTTP status code to return
      * @param request The HTTP request that caused the error
      * @return ResponseEntity containing the error details
      */

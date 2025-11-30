@@ -34,4 +34,6 @@ public interface AccountRepository {
      */
     List<Account> findAll();
 
+    List<Account> findAllByUserId(Long ownerUserId);
+
 }

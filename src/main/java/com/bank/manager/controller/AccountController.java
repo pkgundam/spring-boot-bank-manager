@@ -1,6 +1,10 @@
 package com.bank.manager.controller;
 
 import com.bank.manager.dto.*;
+import com.bank.manager.security.annotations.CurrentUser;
+import com.bank.manager.security.annotations.IsAdmin;
+import com.bank.manager.security.annotations.IsUser;
+import com.bank.manager.security.jwt.CustomUserDetails;
 import com.bank.manager.service.AccountService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -29,6 +33,7 @@ public class AccountController {
      * @return ResponseEntity containing the created account details and HTTP 201 status
      * @throws jakarta.validation.ConstraintViolationException if request validation fails
      */
+    @IsUser
     @PostMapping
     public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request) {
         AccountResponse response = accountService.createAccount(request);
@@ -42,20 +47,11 @@ public class AccountController {
      * @return ResponseEntity containing the account details and HTTP 200 status
      * @throws com.bank.manager.exception.AccountNotFoundException if no account is found with the given ID
      */
+    @IsUser
     @GetMapping("/{accountId}")
     public ResponseEntity<AccountResponse> getAccount(
             @PathVariable @Min(value = 1, message = "Account ID must be greater than 0") Long accountId) {
         return ResponseEntity.ok(accountService.getAccountById(accountId));
-    }
-
-    /**
-     * Retrieves all bank accounts in the system.
-     *
-     * @return ResponseEntity containing a list of all accounts and HTTP 200 status
-     */
-    @GetMapping
-    public ResponseEntity<List<AccountResponse>> getAllAccounts() {
-        return ResponseEntity.ok(accountService.getAllAccounts());
     }
 
     /**
@@ -67,8 +63,10 @@ public class AccountController {
      * @throws com.bank.manager.exception.AccountNotFoundException if no account is found with the given ID
      * @throws jakarta.validation.ConstraintViolationException     if request validation fails
      */
+    @IsUser
     @PostMapping("/{accountId}/deposit")
     public ResponseEntity<AccountResponse> deposit(
+            @CurrentUser CustomUserDetails userDetails,
             @PathVariable @Min(value = 1, message = "Account ID must be greater than 0") Long accountId,
             @Valid @RequestBody AmountRequest request) {
         return ResponseEntity.ok(accountService.deposit(accountId, request));
@@ -84,8 +82,10 @@ public class AccountController {
      * @throws com.bank.manager.exception.InsufficientBalanceException if the account has insufficient funds
      * @throws jakarta.validation.ConstraintViolationException         if request validation fails
      */
+    @IsUser
     @PostMapping("/{accountId}/withdraw")
     public ResponseEntity<AccountResponse> withdraw(
+            @CurrentUser CustomUserDetails userDetails,
             @PathVariable @Min(value = 1, message = "Account ID must be greater than 0") Long accountId,
             @Valid @RequestBody AmountRequest request) {
         return ResponseEntity.ok(accountService.withdraw(accountId, request));
@@ -101,8 +101,10 @@ public class AccountController {
      * @throws IllegalArgumentException                                if source and destination accounts are the same
      * @throws jakarta.validation.ConstraintViolationException         if request validation fails
      */
+    @IsUser
     @PostMapping("/transfer")
-    public ResponseEntity<TransferResponse> transfer(@Valid @RequestBody TransferRequest request) {
+    public ResponseEntity<TransferResponse> transfer(@CurrentUser CustomUserDetails userDetails,
+                                                     @Valid @RequestBody TransferRequest request) {
         return ResponseEntity.ok(accountService.transfer(request));
     }
 
@@ -113,10 +115,18 @@ public class AccountController {
      * @return ResponseEntity containing a list of transactions and HTTP 200 status
      * @throws com.bank.manager.exception.AccountNotFoundException if no account is found with the given ID
      */
+    @IsUser
     @GetMapping("/{accountId}/transactions")
     public ResponseEntity<List<TransactionResponse>> getTransactions(
+            @CurrentUser CustomUserDetails userDetails,
             @PathVariable @Min(value = 1, message = "Account ID must be greater than 0") Long accountId) {
         return ResponseEntity.ok(accountService.getTransactionsForAccount(accountId));
+    }
+
+    @IsUser
+    @GetMapping
+    public ResponseEntity<List<AccountResponse>> getAllAccounts() {
+        return ResponseEntity.ok(accountService.getAllAccounts());
     }
 
 }

@@ -2,12 +2,14 @@ package com.bank.manager.service;
 
 import com.bank.manager.dto.*;
 import com.bank.manager.exception.AccountNotFoundException;
+import com.bank.manager.exception.ForbiddenOperationException;
 import com.bank.manager.exception.InsufficientBalanceException;
 import com.bank.manager.model.Account;
 import com.bank.manager.model.Transaction;
 import com.bank.manager.model.TransactionType;
 import com.bank.manager.repository.AccountRepository;
 import com.bank.manager.repository.TransactionRepository;
+import com.bank.manager.security.util.SecurityUtil;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -39,15 +41,16 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public AccountResponse createAccount(CreateAccountRequest request) {
+        Long currentUserId = SecurityUtil.getCurrentUserId();
         BigDecimal initialBalance = request.getInitialBalance() == null
                 ? BigDecimal.ZERO
                 : request.getInitialBalance();
 
         Account account = new Account(null,
-                request.getHolderName(),
+                request.getAccountName(),
                 initialBalance,
-                LocalDateTime.now());
-
+                LocalDateTime.now(),
+                currentUserId);
         Account saved = accountRepository.save(account);
 
         // Optional: record an initial transaction if initialBalance > 0
@@ -55,7 +58,6 @@ public class AccountServiceImpl implements AccountService {
             recordTransaction(saved, TransactionType.DEPOSIT, initialBalance,
                     null, "Initial deposit on account creation");
         }
-
         return toResponse(saved);
     }
 
@@ -68,8 +70,7 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public AccountResponse getAccountById(Long accountId) {
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new AccountNotFoundException(accountId));
+        Account account = getCurrentUsersAccountByAccountId(accountId);
         return toResponse(account);
     }
 
@@ -80,7 +81,7 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public List<AccountResponse> getAllAccounts() {
-        return accountRepository.findAll()
+        return accountRepository.findAllByUserId(SecurityUtil.getCurrentUserId())
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
@@ -90,23 +91,24 @@ public class AccountServiceImpl implements AccountService {
      * Deposits the specified amount into the account.
      *
      * @param accountId The ID of the account to deposit into
-     * @param request The request containing the deposit amount
+     * @param request   The request containing the deposit amount
      * @return The updated account details
      * @throws com.bank.manager.exception.AccountNotFoundException if no account is found with the given ID
-     * @throws jakarta.validation.ConstraintViolationException if request validation fails
+     * @throws jakarta.validation.ConstraintViolationException     if request validation fails
      */
     @Override
     public AccountResponse deposit(Long accountId, AmountRequest request) {
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new AccountNotFoundException(accountId));
-
+        Account account = getCurrentUsersAccountByAccountId(accountId);
         BigDecimal newBalance = account.getBalance().add(request.getAmount());
         account.setBalance(newBalance);
         accountRepository.save(account);
 
-        recordTransaction(account, TransactionType.DEPOSIT, request.getAmount(),
-                null, "Deposit");
-
+        // record transaction history
+        recordTransaction(account,
+                TransactionType.DEPOSIT,
+                request.getAmount(),
+                null,
+                "Deposit");
         return toResponse(account);
     }
 
@@ -114,17 +116,15 @@ public class AccountServiceImpl implements AccountService {
      * Withdraws the specified amount from the account.
      *
      * @param accountId The ID of the account to withdraw from
-     * @param request The request containing the withdrawal amount
+     * @param request   The request containing the withdrawal amount
      * @return The updated account details
-     * @throws com.bank.manager.exception.AccountNotFoundException if no account is found with the given ID
+     * @throws com.bank.manager.exception.AccountNotFoundException     if no account is found with the given ID
      * @throws com.bank.manager.exception.InsufficientBalanceException if the account has insufficient funds
-     * @throws jakarta.validation.ConstraintViolationException if request validation fails
+     * @throws jakarta.validation.ConstraintViolationException         if request validation fails
      */
     @Override
     public AccountResponse withdraw(Long accountId, AmountRequest request) {
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new AccountNotFoundException(accountId));
-
+        Account account = getCurrentUsersAccountByAccountId(accountId);
         BigDecimal amount = request.getAmount();
         if (account.getBalance().compareTo(amount) < 0) {
             throw new InsufficientBalanceException(account.getBalance(), amount);
@@ -134,9 +134,9 @@ public class AccountServiceImpl implements AccountService {
         account.setBalance(newBalance);
         accountRepository.save(account);
 
+        // record transaction history
         recordTransaction(account, TransactionType.WITHDRAWAL, amount,
                 null, "Withdrawal");
-
         return toResponse(account);
     }
 
@@ -145,15 +145,15 @@ public class AccountServiceImpl implements AccountService {
      *
      * @param request The transfer request containing source account, destination account, and amount
      * @return The transfer response containing both updated account details
-     * @throws com.bank.manager.exception.AccountNotFoundException if either account is not found
+     * @throws com.bank.manager.exception.AccountNotFoundException     if either account is not found
      * @throws com.bank.manager.exception.InsufficientBalanceException if the source account has insufficient funds
-     * @throws IllegalArgumentException if source and destination accounts are the same
-     * @throws jakarta.validation.ConstraintViolationException if request validation fails
+     * @throws IllegalArgumentException                                if source and destination accounts are the same
+     * @throws jakarta.validation.ConstraintViolationException         if request validation fails
      */
     @Override
     public TransferResponse transfer(TransferRequest request) {
-        Account from = accountRepository.findById(request.getFromAccountId())
-                .orElseThrow(() -> new AccountNotFoundException(request.getFromAccountId()));
+        Account from = getCurrentUsersAccountByAccountId(request.getFromAccountId());
+        // User can transfer to one of their accounts or to someone else's account
         Account to = accountRepository.findById(request.getToAccountId())
                 .orElseThrow(() -> new AccountNotFoundException(request.getToAccountId()));
 
@@ -173,7 +173,6 @@ public class AccountServiceImpl implements AccountService {
                 to.getAccountId(), "Transfer to account " + to.getAccountId());
         recordTransaction(to, TransactionType.TRANSFER_IN, amount,
                 from.getAccountId(), "Transfer from account " + from.getAccountId());
-
         return new TransferResponse(toResponse(from), toResponse(to));
     }
 
@@ -187,9 +186,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public List<TransactionResponse> getTransactionsForAccount(Long accountId) {
         // Ensure account exists (otherwise 404)
-        accountRepository.findById(accountId)
-                .orElseThrow(() -> new AccountNotFoundException(accountId));
-
+        getCurrentUsersAccountByAccountId(accountId);
         return transactionRepository.findByAccountId(accountId)
                 .stream()
                 .map(TransactionResponse::from)
@@ -200,7 +197,7 @@ public class AccountServiceImpl implements AccountService {
     private AccountResponse toResponse(Account account) {
         return new AccountResponse(
                 account.getAccountId(),
-                account.getHolderName(),
+                account.getAccountName(),
                 account.getBalance(),
                 account.getCreatedAt()
         );
@@ -209,11 +206,11 @@ public class AccountServiceImpl implements AccountService {
     /**
      * Records a transaction in the database.
      *
-     * @param account The account related to the transaction
-     * @param type The type of the transaction
-     * @param amount The amount of the transaction
+     * @param account          The account related to the transaction
+     * @param type             The type of the transaction
+     * @param amount           The amount of the transaction
      * @param relatedAccountId The ID of the related account in the transaction
-     * @param description A human-readable description of the transaction
+     * @param description      A human-readable description of the transaction
      */
     private void recordTransaction(Account account,
                                    TransactionType type,
@@ -231,6 +228,15 @@ public class AccountServiceImpl implements AccountService {
                 description
         );
         transactionRepository.save(tx);
+    }
+
+    private Account getCurrentUsersAccountByAccountId(Long accountId) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException(accountId));
+        if (!SecurityUtil.isAdmin() && !account.getOwnerUserId().equals(SecurityUtil.getCurrentUserId())) {
+            throw new ForbiddenOperationException("You do not own this account");
+        }
+        return account;
     }
 
 }

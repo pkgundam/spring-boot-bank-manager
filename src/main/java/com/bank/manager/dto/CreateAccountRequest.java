@@ -8,20 +8,20 @@ import java.math.BigDecimal;
 
 public class CreateAccountRequest {
 
-    @NotBlank(message = "Holder name is required")
+    @NotBlank(message = "Account name is required")
     @Size(min = 2, max = 50, message = "Holder name must be between 2 and 50 characters")
-    private String holderName;
+    private String accountName;
 
     @PositiveOrZero(message = "Initial balance must be zero or positive")
     @NotNull
     private BigDecimal initialBalance;
 
-    public String getHolderName() {
-        return holderName;
+    public String getAccountName() {
+        return accountName;
     }
 
-    public void setHolderName(String holderName) {
-        this.holderName = holderName;
+    public void setAccountName(String accountName) {
+        this.accountName = accountName;
     }
 
     public BigDecimal getInitialBalance() {

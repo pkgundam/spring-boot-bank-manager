@@ -1,160 +1,116 @@
-# Simple Banking System --- Spring Boot (In-Memory)
+# Spring Boot Bank Manager — Spring Security (JWT + Roles + Admin) - No Tests
 
-This project is a beginner-friendly Spring Boot application that
-simulates basic banking operations using REST APIs.\
-There is **no database** used---everything runs in memory using
-Maps/Lists.\
-There is **no tets** too in this project.\
-The goal is to help students learn Spring Boot fundamentals such as:
+This project is a full **enterprise-style Spring Boot backend** for a simple banking system.
+Students learn real-world backend development including layered architecture, authentication, authorization, JWT, filters, interceptors, admin flows, and clean exceptions.
 
--   Controllers
--   Services
--   Repositories
--   DTOs
--   Validations
--   Exception handling
--   Layered architecture
+Everything is implemented **in-memory** for learning (no database yet).
 
-------------------------------------------------------------------------
+---
 
-## 🚀 Features
+# 🚀 Features Implemented
 
--   Create a bank account\
--   View a single account\
--   View all accounts\
--   Deposit money\
--   Withdraw money\
--   Transfer money between accounts\
--   Maintain transaction history for each operation\
--   Fetch transaction history for a specific account\
--   In-memory repository (no DB required)\
--   Validation & global exception handling\
--   Clean REST API responses\
--   Health check endpoint
+## 🏦 Banking Features
+- Create bank accounts
+- Deposit, withdraw, transfer
+- View account details
+- View transaction history
+- Transaction logging for all actions
+- Account ownership rules (each account belongs to a user)
+- Users can only access their own accounts
+- Admins can access all accounts
 
-------------------------------------------------------------------------
+---
 
-## 📁 Project Structure (Packages)
+## 🔐 Authentication & Authorization (Enterprise-Grade)
+- User registration (`POST /api/auth/register`)
+- User login (`POST /api/auth/login`)
+- JWT Access Token + Refresh Token
+- Secure password hashing (BCrypt)
+- Stateless JWT Security
+- Custom JWT authentication filter
+- Custom authentication entrypoint (401 JSON)
+- Custom access denied handler (403 JSON)
+- Full global exception handling
 
-    com.example.banking
-     ├── controller
-     ├── service
-     │    └── impl
-     ├── repository
-     ├── model
-     ├── dto
-     ├── exception
+---
 
-------------------------------------------------------------------------
+## 🛂 Custom Annotations
+To simplify controllers and remove boilerplate:
 
-## ⚙️ How to Run
+### `@CurrentUser`
+Injects authenticated `CustomUserDetails` automatically.
 
-1.  Install **Java 21+** and **Maven**.\
-2.  Run the application:
+### `@IsUser`
+Restricts endpoint to authenticated users.
 
-``` bash
+### `@IsAdmin`
+Restricts endpoint to ADMIN role only.
+
+This makes controllers extremely clean and enterprise-style.
+
+---
+
+## 🧭 Admin Features
+Accessible only by `ROLE_ADMIN`:
+
+- Get all users
+- Get user by ID
+- Disable user
+- Enable user
+- Promote user to admin
+- Demote admin to user
+
+---
+
+## 🧰 Filters & Interceptors (Cross-Cutting Concerns)
+
+### Filters (Servlet Level)
+- `RequestLoggingFilter` — logs each incoming request
+- `JwtAuthenticationFilter` — validates JWT & sets SecurityContext
+
+### Interceptors (Spring MVC Level)
+- `RequestTimingInterceptor` — logs execution time per request
+- `UserActivityInterceptor` — logs authenticated user activity
+
+---
+
+# ⚙️ How to Run
+
+1. Install **Java 17+**
+2. Clone the project
+3. Run:
+
+```bash
 mvn spring-boot:run
 ```
 
-3.  The API will be available at:
+App starts at:  
+`http://localhost:8081`
 
-```{=html}
-<!-- -->
-```
-    http://localhost:8081
+---
 
-------------------------------------------------------------------------
+# 🔑 Authentication Flow
 
-## 🔥 API Endpoints (Quick Reference)
+1. Register
+2. Login
+3. Use access token
+4. Refresh token if expired
 
-Action                Method   Endpoint
-  --------------------- -------- -----------------------------------
-- Create Account        POST     `/api/accounts`
-- Get Account           GET      `/api/accounts/{id}`
-- Get All Accounts      GET      `/api/accounts`
-- Deposit               POST     `/api/accounts/{id}/deposit`
-- Withdraw              POST     `/api/accounts/{id}/withdraw`
-- Transfer              POST     `/api/accounts/transfer`
-- Transaction History   GET      `/api/accounts/{id}/transactions`
-- Health Check          GET      `/api/health`
+---
 
-------------------------------------------------------------------------
+# 🧪 Access Rules
 
-## 🧱 Technologies Used
+| Endpoint Group | Security |
+|----------------|----------|
+| `/api/auth/**` | Public |
+| `/api/**` | Authenticated |
+| `/api/admin/**` | ADMIN only |
+| Banking APIs | USER-only unless admin |
 
--   Java 21+\
--   Spring Boot\
--   Maven\
--   Spring Web\
--   Bean Validation (Jakarta Validation)\
--   In-memory storage (Map/List)
+Add then in environment variables in IntelliJ
 
-------------------------------------------------------------------------
+MASTER_KEY=super-secret-value;JWT_SECRET=THIS_IS_NOT_SECURE_CHANGE_ME_32BYTES_MINIMUM_123456
 
-## 📌 Requirements Summary
+In actual production systems, these are handled differently by retrieving from vaults from AWS Secrets Manager, Hashicorp etc.
 
--   Use layered architecture (controller → service → repository)\
--   Use DTOs for request/response\
--   Validate inputs with Bean Validation\
--   Implement custom exceptions\
--   Store and return transaction history\
--   Use meaningful HTTP status codes\
--   Use `@ControllerAdvice` for global error handling
 
-------------------------------------------------------------------------
-
-## 🧭 What You Should Focus On
-
--   Clean code & proper separation of responsibilities\
--   Consistent error responses\
--   Proper validation rules\
--   Naming conventions\
--   Handling edge cases\
--   Returning correct HTTP statuses
-
-------------------------------------------------------------------------
-
-# 📝 Evaluation Criteria (LLM Review)
-
-After submission, an LLM will review and score your project based on the
-following areas:
-
-### **1. Correctness (40%)**
-
--   Do all APIs work as expected?
--   Are deposits, withdrawals, transfers, and transaction history
-    functional?
--   Are validations implemented correctly?
-
-### **2. Code Structure & Architecture (25%)**
-
--   Proper layering (controller/service/repository)
--   Use of DTOs
--   Clean, maintainable code
-
-### **3. Error Handling & Validation (20%)**
-
--   Use of `@Valid` and Bean Validation rules
--   Clear and consistent error messages
--   Correct mapping of exceptions to HTTP status codes
-
-### **4. API Design & Clarity (10%)**
-
--   Meaningful endpoint naming
--   Clean JSON responses
--   Correct HTTP verbs and status codes
-
-### **5. Documentation & Organization (5%)**
-
--   README clarity
--   Proper package structure
--   Easy to run and understand
-
-------------------------------------------------------------------------
-
-## ✔️ Good Luck!
-
-Focus on writing clean, readable code and structuring your project
-well.\
-This assignment is meant to teach you real-world API development the
-right way from the very beginning.
