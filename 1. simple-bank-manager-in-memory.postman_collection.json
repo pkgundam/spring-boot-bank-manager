@@ -1,0 +1,386 @@
+{
+	"info": {
+		"_postman_id": "7cff9192-84b7-447b-a55c-7353abadf6df",
+		"name": "1. simple-bank-manager-in-memory",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "592716"
+	},
+	"item": [
+		{
+			"name": "1. create-account-alice",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"holderName\": \"Alice\",\n    \"initialBalance\": 1000\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/accounts",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"accounts"
+					]
+				},
+				"description": "Generated from cURL: curl -X POST http://localhost:8081/api/accounts \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n        \"holderName\": \"Alice\",\n        \"initialBalance\": 1000\n      }'"
+			},
+			"response": []
+		},
+		{
+			"name": "1. create-account-bob",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n        \"holderName\": \"Bob\",\n        \"initialBalance\": 500\n      }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/accounts",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"accounts"
+					]
+				},
+				"description": "Generated from cURL: curl -X POST http://localhost:8081/api/accounts \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n        \"holderName\": \"Bob\",\n        \"initialBalance\": 500\n      }'"
+			},
+			"response": []
+		},
+		{
+			"name": "2. get-account-by-id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/api/accounts/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"accounts",
+						"1"
+					]
+				},
+				"description": "Generated from cURL: curl -X GET http://localhost:8081/api/accounts/1"
+			},
+			"response": []
+		},
+		{
+			"name": "3. get-all-accounts",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/api/accounts",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"accounts"
+					]
+				},
+				"description": "Generated from cURL: curl -X GET http://localhost:8081/api/accounts"
+			},
+			"response": []
+		},
+		{
+			"name": "4. deposit-money-alice",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"amount\": 200\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/accounts/1/deposit",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"accounts",
+						"1",
+						"deposit"
+					]
+				},
+				"description": "Generated from cURL: curl -X POST http://localhost:8081/api/accounts/1/deposit \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n        \"amount\": 200\n      }'"
+			},
+			"response": []
+		},
+		{
+			"name": "4. deposit-money-bob",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"amount\": 250\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/accounts/2/deposit",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"accounts",
+						"2",
+						"deposit"
+					]
+				},
+				"description": "Generated from cURL: curl -X POST http://localhost:8081/api/accounts/1/deposit \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n        \"amount\": 200\n      }'"
+			},
+			"response": []
+		},
+		{
+			"name": "5. withdraw-money-alice",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"amount\": 150\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/accounts/1/withdraw",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"accounts",
+						"1",
+						"withdraw"
+					]
+				},
+				"description": "Generated from cURL: curl -X POST http://localhost:8081/api/accounts/1/withdraw \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n        \"amount\": 150\n      }'"
+			},
+			"response": []
+		},
+		{
+			"name": "5. withdraw-money-bob",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"amount\": 200\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/accounts/2/withdraw",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"accounts",
+						"2",
+						"withdraw"
+					]
+				},
+				"description": "Generated from cURL: curl -X POST http://localhost:8081/api/accounts/1/withdraw \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n        \"amount\": 150\n      }'"
+			},
+			"response": []
+		},
+		{
+			"name": "6. transfer-money",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"fromAccountId\": 1,\n    \"toAccountId\": 2,\n    \"amount\": 100\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/accounts/transfer",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"accounts",
+						"transfer"
+					]
+				},
+				"description": "Generated from cURL: curl -X POST http://localhost:8081/api/accounts/transfer \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n        \"fromAccountId\": 1,\n        \"toAccountId\": 2,\n        \"amount\": 100\n      }'"
+			},
+			"response": []
+		},
+		{
+			"name": "7. transaction-history-alice",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/accounts/1/transactions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"accounts",
+						"1",
+						"transactions"
+					]
+				},
+				"description": "Generated from cURL: curl -X GET http://localhost:8081/api/accounts/1/transactions"
+			},
+			"response": []
+		},
+		{
+			"name": "7. transaction-history-bob",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/api/accounts/2/transactions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"accounts",
+						"2",
+						"transactions"
+					]
+				},
+				"description": "Generated from cURL: curl -X GET http://localhost:8081/api/accounts/1/transactions"
+			},
+			"response": []
+		},
+		{
+			"name": "8. health-check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/api/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"health"
+					]
+				},
+				"description": "Generated from cURL: curl -X GET http://localhost:8081/api/accounts/1/transactions"
+			},
+			"response": []
+		}
+	]
+}
