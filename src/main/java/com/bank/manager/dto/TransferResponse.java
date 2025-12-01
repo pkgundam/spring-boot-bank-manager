@@ -1,5 +1,8 @@
 package com.bank.manager.dto;
 
+import lombok.Data;
+
+@Data
 public class TransferResponse {
 
     private AccountResponse fromAccount;
@@ -10,11 +13,4 @@ public class TransferResponse {
         this.toAccount = toAccount;
     }
 
-    public AccountResponse getFromAccount() {
-        return fromAccount;
-    }
-
-    public AccountResponse getToAccount() {
-        return toAccount;
-    }
 }

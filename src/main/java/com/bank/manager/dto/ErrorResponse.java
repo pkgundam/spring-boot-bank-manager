@@ -1,7 +1,10 @@
 package com.bank.manager.dto;
 
+import lombok.Data;
+
 import java.time.Instant;
 
+@Data
 public class ErrorResponse {
 
     private Instant timestamp;
@@ -18,23 +21,4 @@ public class ErrorResponse {
         this.path = path;
     }
 
-    public Instant getTimestamp() {
-        return timestamp;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public String getError() {
-        return error;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public String getPath() {
-        return path;
-    }
 }

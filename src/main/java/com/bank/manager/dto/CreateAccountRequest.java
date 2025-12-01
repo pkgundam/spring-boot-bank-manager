@@ -4,8 +4,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
+
 import java.math.BigDecimal;
 
+@Data
 public class CreateAccountRequest {
 
     @NotBlank(message = "Account name is required")
@@ -15,21 +18,5 @@ public class CreateAccountRequest {
     @PositiveOrZero(message = "Initial balance must be zero or positive")
     @NotNull
     private BigDecimal initialBalance;
-
-    public String getAccountName() {
-        return accountName;
-    }
-
-    public void setAccountName(String accountName) {
-        this.accountName = accountName;
-    }
-
-    public BigDecimal getInitialBalance() {
-        return initialBalance;
-    }
-
-    public void setInitialBalance(BigDecimal initialBalance) {
-        this.initialBalance = initialBalance;
-    }
 
 }

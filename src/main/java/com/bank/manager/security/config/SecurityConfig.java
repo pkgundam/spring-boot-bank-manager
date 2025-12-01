@@ -61,7 +61,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/health").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()                // Public endpoints
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")          // Role examples
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")          // com.bank.manager.auth.entity.enums.Role examples
                         .anyRequest().authenticated()                                 // Everything else secured
                 )
                 .userDetailsService(userDetailsService)  // Configure the UserDetailsService

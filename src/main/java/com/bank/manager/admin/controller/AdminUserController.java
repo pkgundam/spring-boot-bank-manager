@@ -2,7 +2,7 @@ package com.bank.manager.admin.controller;
 
 import com.bank.manager.admin.dto.UserSummaryResponse;
 import com.bank.manager.admin.service.AdminService;
-import com.bank.manager.auth.model.User;
+import com.bank.manager.auth.entity.UserEntity;
 import com.bank.manager.security.annotations.IsAdmin;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +27,7 @@ public class AdminUserController {
 
     @IsAdmin
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUser(@PathVariable Long id) {
+    public ResponseEntity<UserEntity> getUser(@PathVariable Long id) {
         return ResponseEntity.ok(adminService.getUserById(id));
     }
 

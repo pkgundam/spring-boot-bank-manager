@@ -1,0 +1,41 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DB_HOST}/${DB_NAME}?sslmode=require&channelBinding=require
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      pool-name: BankHikariPool
+      # --- Pool size ---
+      minimum-idle: 5
+      maximum-pool-size: 20   # Used by many fintech apps
+      # --- Idle + lifetime ---
+      idle-timeout: 60000           # 60s
+      max-lifetime: 1800000         # 30 minutes (recommended by AWS, GCP, Neon, Supabase)
+      # --- Connection timeout ---
+      connection-timeout: 30000     # 30s
+      # --- Test query to validate connections ---
+      connection-test-query: "SELECT 1"
+      # --- Auto-commit behavior ---
+      auto-commit: true
+
+  jpa:
+    hibernate:
+      ddl-auto: none   # NEVER use update/create in enterprise
+    show-sql: false
+    open-in-view: false   # enterprise default
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        generate_statistics: false
+
+security:
+  master-key: ${MASTER_KEY}
+  jwt:
+    secret: ${JWT_SECRET}
+    expirationMs: 3600000        # 1 hour
+    refreshExpirationMs: 604800000 # 7 days

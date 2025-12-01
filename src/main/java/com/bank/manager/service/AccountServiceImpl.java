@@ -1,130 +1,115 @@
 package com.bank.manager.service;
 
+import com.bank.manager.auth.repository.UserRepository;
 import com.bank.manager.dto.*;
+import com.bank.manager.entity.AccountEntity;
+import com.bank.manager.entity.TransactionEntity;
+import com.bank.manager.auth.entity.UserEntity;
+import com.bank.manager.entity.enums.TransactionType;
 import com.bank.manager.exception.AccountNotFoundException;
 import com.bank.manager.exception.ForbiddenOperationException;
 import com.bank.manager.exception.InsufficientBalanceException;
-import com.bank.manager.model.Account;
-import com.bank.manager.model.Transaction;
-import com.bank.manager.model.TransactionType;
 import com.bank.manager.repository.AccountRepository;
 import com.bank.manager.repository.TransactionRepository;
 import com.bank.manager.security.util.SecurityUtil;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Default implementation of AccountService using an in-memory repository.
  */
 @Service
+@Transactional
 public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
 
     public AccountServiceImpl(AccountRepository accountRepository,
-                              TransactionRepository transactionRepository) {
+                              TransactionRepository transactionRepository,
+                              UserRepository userRepository) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
+        this.userRepository = userRepository;
     }
 
-    /**
-     * Creates a new bank account with the provided details.
-     *
-     * @param request The request containing account creation details
-     * @return The created account response
-     * @throws jakarta.validation.ConstraintViolationException if request validation fails
-     */
+    // --------------------------------------------------------
+    // CREATE ACCOUNT
+    // --------------------------------------------------------
     @Override
     public AccountResponse createAccount(CreateAccountRequest request) {
         Long currentUserId = SecurityUtil.getCurrentUserId();
+        UserEntity owner = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         BigDecimal initialBalance = request.getInitialBalance() == null
                 ? BigDecimal.ZERO
                 : request.getInitialBalance();
-
-        Account account = new Account(null,
+        AccountEntity account = new AccountEntity(
                 request.getAccountName(),
                 initialBalance,
-                LocalDateTime.now(),
-                currentUserId);
-        Account saved = accountRepository.save(account);
+                owner
+        );
+        AccountEntity saved = accountRepository.save(account);
 
-        // Optional: record an initial transaction if initialBalance > 0
         if (initialBalance.compareTo(BigDecimal.ZERO) > 0) {
-            recordTransaction(saved, TransactionType.DEPOSIT, initialBalance,
-                    null, "Initial deposit on account creation");
+            recordTransaction(saved, TransactionType.DEPOSIT, initialBalance, null,
+                    "Initial deposit on account creation");
         }
         return toResponse(saved);
     }
 
-    /**
-     * Retrieves an account by its unique identifier.
-     *
-     * @param accountId The ID of the account to retrieve
-     * @return The account details
-     * @throws com.bank.manager.exception.AccountNotFoundException if no account is found with the given ID
-     */
+    // --------------------------------------------------------
+    // GET ACCOUNT BY ID
+    // --------------------------------------------------------
     @Override
     public AccountResponse getAccountById(Long accountId) {
-        Account account = getCurrentUsersAccountByAccountId(accountId);
+        AccountEntity account = getAccessibleAccount(accountId);
         return toResponse(account);
     }
 
-    /**
-     * Retrieves all bank accounts in the system.
-     *
-     * @return A list of all account responses
-     */
+    // --------------------------------------------------------
+    // GET ALL ACCOUNTS FOR CURRENT USER
+    // --------------------------------------------------------
     @Override
     public List<AccountResponse> getAllAccounts() {
-        return accountRepository.findAllByUserId(SecurityUtil.getCurrentUserId())
+        Long userId = SecurityUtil.getCurrentUserId();
+        return accountRepository.findByOwnerId(userId)
                 .stream()
                 .map(this::toResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    /**
-     * Deposits the specified amount into the account.
-     *
-     * @param accountId The ID of the account to deposit into
-     * @param request   The request containing the deposit amount
-     * @return The updated account details
-     * @throws com.bank.manager.exception.AccountNotFoundException if no account is found with the given ID
-     * @throws jakarta.validation.ConstraintViolationException     if request validation fails
-     */
+    // --------------------------------------------------------
+    // DEPOSIT
+    // --------------------------------------------------------
     @Override
     public AccountResponse deposit(Long accountId, AmountRequest request) {
-        Account account = getCurrentUsersAccountByAccountId(accountId);
+        AccountEntity account = getAccessibleAccount(accountId);
         BigDecimal newBalance = account.getBalance().add(request.getAmount());
         account.setBalance(newBalance);
         accountRepository.save(account);
 
-        // record transaction history
-        recordTransaction(account,
+        recordTransaction(
+                account,
                 TransactionType.DEPOSIT,
                 request.getAmount(),
                 null,
-                "Deposit");
+                "Deposit"
+        );
         return toResponse(account);
     }
 
-    /**
-     * Withdraws the specified amount from the account.
-     *
-     * @param accountId The ID of the account to withdraw from
-     * @param request   The request containing the withdrawal amount
-     * @return The updated account details
-     * @throws com.bank.manager.exception.AccountNotFoundException     if no account is found with the given ID
-     * @throws com.bank.manager.exception.InsufficientBalanceException if the account has insufficient funds
-     * @throws jakarta.validation.ConstraintViolationException         if request validation fails
-     */
+    // --------------------------------------------------------
+    // WITHDRAW
+    // --------------------------------------------------------
     @Override
     public AccountResponse withdraw(Long accountId, AmountRequest request) {
-        Account account = getCurrentUsersAccountByAccountId(accountId);
+        AccountEntity account = getAccessibleAccount(accountId);
         BigDecimal amount = request.getAmount();
         if (account.getBalance().compareTo(amount) < 0) {
             throw new InsufficientBalanceException(account.getBalance(), amount);
@@ -134,109 +119,109 @@ public class AccountServiceImpl implements AccountService {
         account.setBalance(newBalance);
         accountRepository.save(account);
 
-        // record transaction history
-        recordTransaction(account, TransactionType.WITHDRAWAL, amount,
-                null, "Withdrawal");
+        recordTransaction(
+                account,
+                TransactionType.WITHDRAWAL,
+                amount,
+                null,
+                "Withdrawal"
+        );
         return toResponse(account);
     }
 
-    /**
-     * Transfers money between two accounts.
-     *
-     * @param request The transfer request containing source account, destination account, and amount
-     * @return The transfer response containing both updated account details
-     * @throws com.bank.manager.exception.AccountNotFoundException     if either account is not found
-     * @throws com.bank.manager.exception.InsufficientBalanceException if the source account has insufficient funds
-     * @throws IllegalArgumentException                                if source and destination accounts are the same
-     * @throws jakarta.validation.ConstraintViolationException         if request validation fails
-     */
+    // --------------------------------------------------------
+    // TRANSFER
+    // --------------------------------------------------------
     @Override
     public TransferResponse transfer(TransferRequest request) {
-        Account from = getCurrentUsersAccountByAccountId(request.getFromAccountId());
-        // User can transfer to one of their accounts or to someone else's account
-        Account to = accountRepository.findById(request.getToAccountId())
+        AccountEntity from = getAccessibleAccount(request.getFromAccountId()); // must be owned or admin
+        AccountEntity to = accountRepository.findById(request.getToAccountId())
                 .orElseThrow(() -> new AccountNotFoundException(request.getToAccountId()));
-
-        if (from.getBalance().compareTo(request.getAmount()) < 0) {
-            throw new InsufficientBalanceException(from.getBalance(), request.getAmount());
+        BigDecimal amount = request.getAmount();
+        if (from.getBalance().compareTo(amount) < 0) {
+            throw new InsufficientBalanceException(from.getBalance(), amount);
         }
 
-        // Update balances
-        BigDecimal amount = request.getAmount();
+        // UPDATE BALANCES
         from.setBalance(from.getBalance().subtract(amount));
         to.setBalance(to.getBalance().add(amount));
         accountRepository.save(from);
         accountRepository.save(to);
 
-        // Record two transactions: OUT for from, IN for to
-        recordTransaction(from, TransactionType.TRANSFER_OUT, amount,
-                to.getAccountId(), "Transfer to account " + to.getAccountId());
-        recordTransaction(to, TransactionType.TRANSFER_IN, amount,
-                from.getAccountId(), "Transfer from account " + from.getAccountId());
+        // RECORD TX #1 – outgoing
+        recordTransaction(
+                from,
+                TransactionType.TRANSFER_OUT,
+                amount,
+                to.getAccountId(),
+                "Transfer to account " + to.getAccountId()
+        );
+
+        // RECORD TX #2 – incoming
+        recordTransaction(
+                to,
+                TransactionType.TRANSFER_IN,
+                amount,
+                from.getAccountId(),
+                "Transfer from account " + from.getAccountId()
+        );
         return new TransferResponse(toResponse(from), toResponse(to));
     }
 
-    /**
-     * Retrieves all transactions for a specific account.
-     *
-     * @param accountId The ID of the account to find transactions for
-     * @return A list of transaction responses
-     * @throws com.bank.manager.exception.AccountNotFoundException if no account is found with the given ID
-     */
+    // --------------------------------------------------------
+    // GET TRANSACTIONS FOR ACCOUNT
+    // --------------------------------------------------------
     @Override
     public List<TransactionResponse> getTransactionsForAccount(Long accountId) {
-        // Ensure account exists (otherwise 404)
-        getCurrentUsersAccountByAccountId(accountId);
-        return transactionRepository.findByAccountId(accountId)
+        getAccessibleAccount(accountId); // ensures access
+        return transactionRepository.findByAccountAccountId(accountId)
                 .stream()
                 .map(TransactionResponse::from)
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    // all private methods below
-    private AccountResponse toResponse(Account account) {
+    // --------------------------------------------------------
+    // PRIVATE HELPERS
+    // --------------------------------------------------------
+
+    private AccountEntity getAccessibleAccount(Long accountId) {
+        AccountEntity account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException(accountId));
+
+        // ADMIN can see all
+        if (SecurityUtil.isAdmin()) return account;
+
+        Long currentUser = SecurityUtil.getCurrentUserId();
+        Long ownerId = account.getOwner().getId();
+        if (!ownerId.equals(currentUser)) {
+            throw new ForbiddenOperationException("You do not own this account");
+        }
+        return account;
+    }
+
+    private void recordTransaction(AccountEntity account,
+                                   TransactionType type,
+                                   BigDecimal amount,
+                                   Long relatedAccountId,
+                                   String description) {
+        TransactionEntity tx = new TransactionEntity(
+                type,
+                amount,
+                account.getBalance(), // balance after operation
+                relatedAccountId,
+                description
+        );
+        tx.setAccount(account); // set relationship
+        transactionRepository.save(tx);
+    }
+
+    private AccountResponse toResponse(AccountEntity account) {
         return new AccountResponse(
                 account.getAccountId(),
                 account.getAccountName(),
                 account.getBalance(),
                 account.getCreatedAt()
         );
-    }
-
-    /**
-     * Records a transaction in the database.
-     *
-     * @param account          The account related to the transaction
-     * @param type             The type of the transaction
-     * @param amount           The amount of the transaction
-     * @param relatedAccountId The ID of the related account in the transaction
-     * @param description      A human-readable description of the transaction
-     */
-    private void recordTransaction(Account account,
-                                   TransactionType type,
-                                   BigDecimal amount,
-                                   Long relatedAccountId,
-                                   String description) {
-        Transaction tx = new Transaction(
-                null,
-                account.getAccountId(),
-                type,
-                amount,
-                account.getBalance(),       // balance AFTER the operation
-                LocalDateTime.now(),
-                relatedAccountId,
-                description
-        );
-        transactionRepository.save(tx);
-    }
-
-    private Account getCurrentUsersAccountByAccountId(Long accountId) {
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new AccountNotFoundException(accountId));
-        if (!SecurityUtil.isAdmin() && !account.getOwnerUserId().equals(SecurityUtil.getCurrentUserId())) {
-            throw new ForbiddenOperationException("You do not own this account");
-        }
-        return account;
     }
 
 }

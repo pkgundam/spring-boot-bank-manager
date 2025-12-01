@@ -1,9 +1,11 @@
 package com.bank.manager.admin.dto;
 
-import com.bank.manager.auth.Role;
+import com.bank.manager.auth.entity.enums.Role;
+import lombok.Data;
 
 import java.util.Set;
 
+@Data
 public class UserSummaryResponse {
 
     private final Long id;
@@ -18,26 +20,6 @@ public class UserSummaryResponse {
         this.fullName = fullName;
         this.roles = roles;
         this.enabled = enabled;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public Set<Role> getRoles() {
-        return roles;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
     }
 
 }

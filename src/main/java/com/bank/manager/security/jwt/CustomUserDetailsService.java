@@ -1,6 +1,6 @@
 package com.bank.manager.security.jwt;
 
-import com.bank.manager.auth.model.User;
+import com.bank.manager.auth.entity.UserEntity;
 import com.bank.manager.auth.repository.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,13 +17,13 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public CustomUserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepo.findByEmail(email)
+        UserEntity user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
         return new CustomUserDetails(user);
     }
 
     public CustomUserDetails loadUserById(Long id) {
-        User user = userRepo.findById(id)
+        UserEntity user = userRepo.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
         return new CustomUserDetails(user);
     }

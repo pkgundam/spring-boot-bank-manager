@@ -1,20 +1,16 @@
 package com.bank.manager.auth.repository;
 
-import com.bank.manager.auth.model.User;
+import com.bank.manager.auth.entity.UserEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
-public interface UserRepository {
+@Repository
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
-    User save(User user);
-
-    Optional<User> findByEmail(String email);
-
-    Optional<User> findById(Long id);
+    Optional<UserEntity> findByEmail(String email);
 
     boolean existsByEmail(String email);
-
-    List<User> findAll();
 
 }

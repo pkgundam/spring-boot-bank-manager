@@ -1,6 +1,6 @@
 package com.bank.manager.security.jwt;
 
-import com.bank.manager.auth.Role;
+import com.bank.manager.auth.entity.enums.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -24,7 +24,7 @@ public class JwtProvider {
         this.signingKey = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());
     }
 
-    public String generateAccessToken(Long userId, String email, Set<Role> roles) {
+    public String generateAccessToken(Long userId, String email, Set<com.bank.manager.auth.entity.enums.Role> roles) {
         Instant now = Instant.now();
         Instant expiry = now.plusMillis(jwtProperties.getExpirationMs());
 

@@ -1,23 +1,48 @@
-# Spring Boot Bank Manager — Spring Security (JWT + Roles + Admin) - No Tests
+# Spring Boot Bank Manager – Spring Security + JPA (No Tests)
 
-This project is a full **enterprise-style Spring Boot backend** for a simple banking system.
-Students learn real-world backend development including layered architecture, authentication, authorization, JWT, filters, interceptors, admin flows, and clean exceptions.
+This branch implements a fully functional banking backend with:
 
-Everything is implemented **in-memory** for learning (no database yet).
+- JWT Authentication (Access + Refresh Tokens)
+- Role-based Authorization (USER / ADMIN)
+- Master-key protected Admin creation
+- PostgreSQL persistence using JPA/Hibernate
+- Transactional integrity
+- Per-user account permissions
+- Transaction history tracking
+- Clean layered architecture (controller/service/repository/entity)
+- Custom annotations: `@CurrentUser`, `@IsUser`, `@IsAdmin`
+- Global Exception Handling
 
 ---
 
-# 🚀 Features Implemented
+## 🚀 Features
 
-## 🏦 Banking Features
-- Create bank accounts
-- Deposit, withdraw, transfer
-- View account details
-- View transaction history
-- Transaction logging for all actions
-- Account ownership rules (each account belongs to a user)
-- Users can only access their own accounts
-- Admins can access all accounts
+### 🔐 Authentication
+- User registration
+- User login
+- Refresh tokens (secure & hashed)
+- Create-first-admin (master-key protected)
+
+### 💳 Banking
+- Create account (multiple accounts per user)
+- Deposit
+- Withdraw
+- Transfer money between accounts
+- Transaction history per account
+- View all accounts (ADMIN only)
+
+---
+
+## 🛠 Technologies Used
+- Spring Boot 3.5.7
+- Spring Security 6 + JWT
+- PostgreSQL (Neon DB or local)
+- Spring Data JPA
+- Hibernate ORM
+- Lombok
+- Jakarta Validation
+- Method Security (`@EnableMethodSecurity`)
+- Custom Security Utilities
 
 ---
 
@@ -98,6 +123,18 @@ App starts at:
 
 ---
 
+### 2. Add environment variables:
+```
+MASTER_KEY=your-master-key
+JWT_SECRET=your-32byte-secret
+DB_HOST=
+DB_NAME=
+DB_PASSWORD=
+DB_USERNAME=
+```
+Add then in environment variables in IntelliJ
+In actual production systems, these are handled differently by retrieving from vaults from AWS Secrets Manager, Hashicorp etc.
+
 # 🧪 Access Rules
 
 | Endpoint Group | Security |
@@ -107,10 +144,16 @@ App starts at:
 | `/api/admin/**` | ADMIN only |
 | Banking APIs | USER-only unless admin |
 
-Add then in environment variables in IntelliJ
+## 🧪 API Coverage (High-level)
+| Area | Status |
+|------|--------|
+| Registration/Login | ✅ |
+| JWT Security | ✅ |
+| Refresh tokens | ✅ |
+| CRUD accounts | ✅ |
+| Deposit/Withdraw | ✅ |
+| Transfers | ✅ |
+| Transaction history | ✅ |
+| Admin-only APIs | ✅ |
 
-MASTER_KEY=super-secret-value;JWT_SECRET=THIS_IS_NOT_SECURE_CHANGE_ME_32BYTES_MINIMUM_123456
-
-In actual production systems, these are handled differently by retrieving from vaults from AWS Secrets Manager, Hashicorp etc.
-
-
+---

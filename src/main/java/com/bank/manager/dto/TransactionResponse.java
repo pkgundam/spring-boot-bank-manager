@@ -1,11 +1,14 @@
 package com.bank.manager.dto;
 
-import com.bank.manager.model.Transaction;
-import com.bank.manager.model.TransactionType;
+
+import com.bank.manager.entity.TransactionEntity;
+import com.bank.manager.entity.enums.TransactionType;
+import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
+@Data
 public class TransactionResponse {
 
     private Long transactionId;
@@ -13,7 +16,7 @@ public class TransactionResponse {
     private TransactionType type;
     private BigDecimal amount;
     private BigDecimal balanceAfter;
-    private LocalDateTime createdAt;
+    private Instant createdAt;
     private Long relatedAccountId;
     private String description;
 
@@ -22,7 +25,7 @@ public class TransactionResponse {
                                TransactionType type,
                                BigDecimal amount,
                                BigDecimal balanceAfter,
-                               LocalDateTime createdAt,
+                               Instant createdAt,
                                Long relatedAccountId,
                                String description) {
         this.transactionId = transactionId;
@@ -35,10 +38,10 @@ public class TransactionResponse {
         this.description = description;
     }
 
-    public static TransactionResponse from(Transaction tx) {
+    public static TransactionResponse from(TransactionEntity tx) {
         return new TransactionResponse(
-                tx.getTransactionId(),
-                tx.getAccountId(),
+                tx.getId(),
+                tx.getRelatedAccountId(),
                 tx.getType(),
                 tx.getAmount(),
                 tx.getBalanceAfter(),
@@ -46,38 +49,6 @@ public class TransactionResponse {
                 tx.getRelatedAccountId(),
                 tx.getDescription()
         );
-    }
-
-    public Long getTransactionId() {
-        return transactionId;
-    }
-
-    public Long getAccountId() {
-        return accountId;
-    }
-
-    public TransactionType getType() {
-        return type;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public BigDecimal getBalanceAfter() {
-        return balanceAfter;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getRelatedAccountId() {
-        return relatedAccountId;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
 }

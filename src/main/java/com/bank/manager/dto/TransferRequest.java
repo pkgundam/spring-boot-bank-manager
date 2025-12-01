@@ -3,8 +3,11 @@ package com.bank.manager.dto;
 import com.bank.manager.validation.DifferentAccounts;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.Data;
+
 import java.math.BigDecimal;
 
+@Data
 @DifferentAccounts(
     first = "fromAccountId",
     second = "toAccountId",
@@ -22,27 +25,4 @@ public class TransferRequest {
     @Positive(message = "Amount must be greater than zero")
     private BigDecimal amount;
 
-    public Long getFromAccountId() {
-        return fromAccountId;
-    }
-
-    public void setFromAccountId(Long fromAccountId) {
-        this.fromAccountId = fromAccountId;
-    }
-
-    public Long getToAccountId() {
-        return toAccountId;
-    }
-
-    public void setToAccountId(Long toAccountId) {
-        this.toAccountId = toAccountId;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
 }
